@@ -32,11 +32,29 @@ jobs:
         chmod 600 ~/.ssh/ec2_key
         ssh-keyscan -H ${{ env.EC2_HOST }} >> ~/.ssh/known_hosts
     
+    - name: Install dependencies on EC2
+      run: |
+        ssh -i ~/.ssh/ec2_key ${{ env.EC2_USER }}@${{ env.EC2_HOST }} '
+          sudo yum update -y
+          sudo yum install -y git docker
+          sudo systemctl start docker
+          sudo systemctl enable docker
+          sudo usermod -aG docker ec2-user
+          
+          # Install docker-compose
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          
+          # Create app directory
+          sudo mkdir -p /home/ec2-user/wmp-backend
+          sudo chown ec2-user:ec2-user /home/ec2-user/wmp-backend
+        '
+    
     - name: Deploy to EC2
       run: |
         ssh -i ~/.ssh/ec2_key ${{ env.EC2_USER }}@${{ env.EC2_HOST }} '
-          set -e
-          if [ ! -d /home/ec2-user/wmp-backend ]; then
+          if [ ! -d /home/ec2-user/wmp-backend/.git ]; then
+            rm -rf /home/ec2-user/wmp-backend/*
             git clone https://github.com/estebananot/wmp-backend.git /home/ec2-user/wmp-backend
           fi
           cd /home/ec2-user/wmp-backend
