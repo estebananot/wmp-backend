@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  AWS_REGION: us-east-1
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -20,24 +23,27 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
     
-    - name: Deploy to EC2
-      env:
-        PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-        HOST: ${{ vars.EC2_HOST }}
-        USER: ${{ vars.EC2_USER }}
+    - name: Setup SSH
       run: |
-        # Save SSH key
-        echo "$PRIVATE_KEY" > private_key.pem
-        chmod 600 private_key.pem
-        
-        # Connect and deploy
-        ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST '
-          cd /home/ec2-user/wmp-backend || git clone https://github.com/estebananot/wmp-backend.git /home/ec2-user/wmp-backend
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key
+        chmod 600 ~/.ssh/ec2_key
+        ssh-keyscan -H ${{ vars.EC2_HOST }} >> ~/.ssh/known_hosts
+    
+    - name: Deploy to EC2
+      run: |
+        ssh -i ~/.ssh/ec2_key ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} '
+          set -e
+          if [ ! -d /home/ec2-user/wmp-backend ]; then
+            git clone https://github.com/estebananot/wmp-backend.git /home/ec2-user/wmp-backend
+          fi
           cd /home/ec2-user/wmp-backend
           git pull origin main
-          
-          # Create .env file from secrets
-          cat > .env << EOL
+        '
+    
+    - name: Create .env file
+      run: |
+        ssh -i ~/.ssh/ec2_key ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} "cat > /home/ec2-user/wmp-backend/.env << 'EOF'
         NODE_ENV=production
         PORT=3000
         CORS_ORIGIN=*
@@ -51,17 +57,16 @@ jobs:
         WOMPI_PRIVATE_KEY=${{ secrets.WOMPI_PRIVATE_KEY }}
         WOMPI_INTEGRITY_KEY=${{ secrets.WOMPI_INTEGRITY_KEY }}
         WOMPI_EVENTS_KEY=${{ secrets.WOMPI_EVENTS_KEY }}
-        EOL
-          
-          # Deploy with docker-compose
-          docker-compose -f docker-compose.prod.yml down
+        EOF"
+    
+    - name: Start Docker Compose
+      run: |
+        ssh -i ~/.ssh/ec2_key ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} '
+          cd /home/ec2-user/wmp-backend
+          docker-compose -f docker-compose.prod.yml down || true
           docker-compose -f docker-compose.prod.yml up -d --build
-          
-          # Clean up old images
-          docker system prune -f
+          docker system prune -f || true
         '
-        
-        rm -f private_key.pem
     
     - name: Health Check
       run: |
