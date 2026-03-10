@@ -19,7 +19,7 @@ const dataSource = new DataSource({
   database: process.env.DB_DATABASE || 'wompi_ecommerce',
   entities: [ProductEntity, CustomerEntity, TransactionEntity, DeliveryEntity],
   synchronize: true,
-  ssl: isProduction ? { rejectUnauthorized: false } : false,
+  ssl: false,
 });
 
 async function runSeeds() {
