@@ -19,7 +19,7 @@ export const getWompiConfig = (): WompiConfig => {
 
   return {
     apiUrl:
-      process.env.WOMPI_API_URL || 'https://sandbox.wompi.co/v1',
+      process.env.WOMPI_API_URL || 'https://api-sandbox.co.uat.wompi.dev/v1',
     publicKey: process.env.WOMPI_PUBLIC_KEY || '',
     privateKey: isProduction
       ? getRequiredEnv('WOMPI_PRIVATE_KEY')

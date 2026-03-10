@@ -31,7 +31,7 @@ services:
       DB_USERNAME: ${DB_USERNAME:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
       DB_DATABASE: ${DB_DATABASE:-wompi_ecommerce}
-      WOMPI_API_URL: ${WOMPI_API_URL:-https://sandbox.wompi.co/v1}
+      WOMPI_API_URL: ${WOMPI_API_URL:-https://api-sandbox.co.uat.wompi.dev/v1}
       WOMPI_PUBLIC_KEY: ${WOMPI_PUBLIC_KEY}
       WOMPI_PRIVATE_KEY: ${WOMPI_PRIVATE_KEY}
       WOMPI_INTEGRITY_KEY: ${WOMPI_INTEGRITY_KEY}

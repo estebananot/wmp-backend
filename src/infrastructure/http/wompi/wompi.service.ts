@@ -23,10 +23,6 @@ export class WompiService implements PaymentServiceInterface {
   private readonly config = getWompiConfig();
 
   constructor() {
-    this.logger.log(`Wompi API URL: ${this.config.apiUrl}`);
-    this.logger.log(`Wompi Public Key: ${this.config.publicKey.substring(0, 20)}...`);
-    this.logger.log(`Wompi Private Key: ${this.config.privateKey.substring(0, 20)}...`);
-    
     this.httpClient = axios.create({
       baseURL: this.config.apiUrl,
       headers: {
