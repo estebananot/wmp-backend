@@ -7,7 +7,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  EC2_HOST: 3.215.133.77
+  EC2_HOST: 98.93.0.47
   EC2_USER: ec2-user
 
 jobs:
