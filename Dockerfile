@@ -8,10 +8,7 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-COPY package*.json ./
-RUN npm ci --only=production && npm prune --production
-
-COPY dist ./dist
+RUN npm ci --only=production && npm cache clean --force
 
 EXPOSE 3000
 
