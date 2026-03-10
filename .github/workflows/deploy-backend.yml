@@ -7,6 +7,8 @@ on:
 
 env:
   AWS_REGION: us-east-1
+  EC2_HOST: 3.215.133.77
+  EC2_USER: ec2-user
 
 jobs:
   deploy:
@@ -28,11 +30,11 @@ jobs:
         mkdir -p ~/.ssh
         echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key
         chmod 600 ~/.ssh/ec2_key
-        ssh-keyscan -H ${{ vars.EC2_HOST }} >> ~/.ssh/known_hosts
+        ssh-keyscan -H ${{ env.EC2_HOST }} >> ~/.ssh/known_hosts
     
     - name: Deploy to EC2
       run: |
-        ssh -i ~/.ssh/ec2_key ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} '
+        ssh -i ~/.ssh/ec2_key ${{ env.EC2_USER }}@${{ env.EC2_HOST }} '
           set -e
           if [ ! -d /home/ec2-user/wmp-backend ]; then
             git clone https://github.com/estebananot/wmp-backend.git /home/ec2-user/wmp-backend
@@ -43,7 +45,7 @@ jobs:
     
     - name: Create .env file
       run: |
-        ssh -i ~/.ssh/ec2_key ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} "cat > /home/ec2-user/wmp-backend/.env << 'EOF'
+        ssh -i ~/.ssh/ec2_key ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "cat > /home/ec2-user/wmp-backend/.env << 'EOF'
         NODE_ENV=production
         PORT=3000
         CORS_ORIGIN=*
@@ -61,7 +63,7 @@ jobs:
     
     - name: Start Docker Compose
       run: |
-        ssh -i ~/.ssh/ec2_key ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} '
+        ssh -i ~/.ssh/ec2_key ${{ env.EC2_USER }}@${{ env.EC2_HOST }} '
           cd /home/ec2-user/wmp-backend
           docker-compose -f docker-compose.prod.yml down || true
           docker-compose -f docker-compose.prod.yml up -d --build
@@ -71,5 +73,5 @@ jobs:
     - name: Health Check
       run: |
         sleep 30
-        curl -f http://${{ vars.EC2_HOST }}:3000/api/health || exit 1
+        curl -f http://${{ env.EC2_HOST }}:3000/api/health || exit 1
       continue-on-error: true
