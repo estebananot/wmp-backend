@@ -93,3 +93,13 @@ jobs:
         sleep 30
         curl -f http://${{ env.EC2_HOST }}:3000/api/health || exit 1
       continue-on-error: true
+    
+    - name: Seed Products
+      run: |
+        echo "Waiting for services to be ready..."
+        sleep 30
+        ssh -i ~/.ssh/ec2_key ${{ env.EC2_USER }}@${{ env.EC2_HOST }} '
+          cd /home/ec2-user/wmp-backend
+          docker-compose exec -T backend npm run seed || echo "Seed failed or already executed"
+        '
+      continue-on-error: true
