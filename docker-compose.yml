@@ -17,5 +17,28 @@ services:
       timeout: 5s
       retries: 5
 
+  backend:
+    build: .
+    container_name: wompi_backend
+    restart: always
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_DATABASE: ${DB_DATABASE:-wompi_ecommerce}
+      WOMPI_API_URL: ${WOMPI_API_URL:-https://sandbox.wompi.co/v1}
+      WOMPI_PUBLIC_KEY: ${WOMPI_PUBLIC_KEY}
+      WOMPI_PRIVATE_KEY: ${WOMPI_PRIVATE_KEY}
+      WOMPI_INTEGRITY_KEY: ${WOMPI_INTEGRITY_KEY}
+      WOMPI_EVENTS_KEY: ${WOMPI_EVENTS_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:

@@ -83,8 +83,8 @@ jobs:
       run: |
         ssh -i ~/.ssh/ec2_key ${{ env.EC2_USER }}@${{ env.EC2_HOST }} '
           cd /home/ec2-user/wmp-backend
-          docker-compose -f docker-compose.prod.yml down || true
-          docker-compose -f docker-compose.prod.yml up -d --build
+          docker-compose down || true
+          docker-compose up -d --build
           docker system prune -f || true
         '
     
